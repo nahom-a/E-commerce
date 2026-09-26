@@ -1,0 +1,72 @@
+# =========================================================================
+# DispatchDesk Project .gitignore
+# =========================================================================
+
+# Compiled / Build Output
+target/
+backend/target/
+dist/
+frontend/dist/
+dist-ssr/
+build/
+bin/
+*.class
+*.jar
+*.war
+*.ear
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+.pnp
+.pnp.js
+
+# Environment and Secret Files
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE / Editor Files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+.springBeans
+
+# Log Files & Test Reports
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+surefire-reports/
+backend/target/surefire-reports/
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Vite & Frontend Cache
+.vite/
+frontend/.vite/
+.cache/
+.eslintcache
+
+# Coverage and test output
+coverage/
+.nyc_output/
