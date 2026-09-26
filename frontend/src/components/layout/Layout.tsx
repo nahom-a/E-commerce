@@ -1,14 +1,20 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/layout/Sidebar';
+import { Sidebar } from './Sidebar';
+import { Navbar } from './Navbar';
 
-const Layout: React.FC = () => (
-  <div style={{ display: 'flex', minHeight: '100vh' }}>
-    <Sidebar />
-    <main style={{ flex: 1, marginLeft: '240px', padding: '24px', overflowY: 'auto' }}>
-      <Outlet />
-    </main>
-  </div>
-);
+export const Layout: React.FC = () => {
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+      <Sidebar />
+      <div style={{ flex: 1, marginLeft: '230px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Navbar />
+        <main style={{ flex: 1, padding: '24px 32px', maxWidth: '1440px', width: '100%', margin: '0 auto' }}>
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
 
 export default Layout;

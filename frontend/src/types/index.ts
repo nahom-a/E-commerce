@@ -1,26 +1,43 @@
+export type Role = 'ADMIN' | 'DISPATCHER' | 'DRIVER';
+
+export type DeliveryStatus =
+  | 'PENDING'
+  | 'ASSIGNED'
+  | 'PICKED_UP'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export type DriverStatus = 'AVAILABLE' | 'ON_DELIVERY' | 'OFFLINE';
+
+export type Priority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+
+export type PackageSize = 'SMALL' | 'MEDIUM' | 'LARGE' | 'EXTRA_LARGE';
+
 export interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: Role;
 }
 
 export interface Delivery {
   id: number;
   deliveryNumber: string;
-  customerId: number;
-  customerName: string;
+  customerId: number | null;
+  customerName: string | null;
   recipientName: string;
   recipientPhone: string;
   address: string;
   city: string;
   packageDescription: string;
-  packageSize: string;
-  priority: string;
-  status: string;
+  packageSize: PackageSize | string;
+  priority: Priority;
+  status: DeliveryStatus;
   driverId: number | null;
   driverName: string | null;
-  scheduledDate: string;
+  scheduledDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,7 +47,7 @@ export interface Driver {
   phone: string;
   vehicle: string;
   licenseNumber: string;
-  status: string;
+  status: DriverStatus;
   userName: string;
   activeDeliveries: number;
 }
@@ -59,11 +76,11 @@ export interface ActivityLog {
 export interface DeliveryStatusHistory {
   id: number;
   deliveryId: number;
-  oldStatus: string;
-  newStatus: string;
-  changedBy: string;
+  oldStatus: string | null;
+  newStatus: DeliveryStatus;
+  changedBy: User | null;
   changedAt: string;
-  note: string;
+  note: string | null;
 }
 
 export interface DashboardStats {
@@ -87,4 +104,33 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+}
+
+export interface CreateDeliveryPayload {
+  customerId?: number;
+  recipientName: string;
+  recipientPhone: string;
+  address: string;
+  city: string;
+  packageDescription: string;
+  packageSize?: string;
+  priority?: Priority;
+  scheduledDate?: string | null;
+  driverId?: number | null;
+}
+
+export interface CreateDriverPayload {
+  phone: string;
+  vehicle: string;
+  licenseNumber: string;
+  status: DriverStatus;
+}
+
+export interface CreateCustomerPayload {
+  name: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  address: string;
+  notes?: string;
 }
