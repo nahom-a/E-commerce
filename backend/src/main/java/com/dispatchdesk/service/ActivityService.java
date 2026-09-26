@@ -13,6 +13,6 @@ public class ActivityService {
     @Autowired private ActivityLogRepository activityLogRepository;
 
     public List<ActivityLog> getActivity() {
-        return activityLogRepository.findAllOrderByCreatedAtDesc();
+        return activityLogRepository.findAllByOrderByCreatedAtDesc();
     }
 }

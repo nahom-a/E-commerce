@@ -6,11 +6,16 @@ import com.dispatchdesk.entity.User;
 import com.dispatchdesk.repository.UserRepository;
 import com.dispatchdesk.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -40,7 +45,12 @@ public class AuthService {
             .orElseThrow(() -> new RuntimeException("User not found"));
 
         String token = jwtUtil.generateToken(
-            new UsernamePasswordAuthenticationToken(user.getEmail(), null, user.getRole().name() == null ? java.util.Collections.emptyList() : java.util.Collections.singletonList("ROLE_" + user.getRole().name()))
+            new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                null,
+                user.getRole().name() == null ? Collections.emptyList() :
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+            )
         );
 
         return AuthResponse.builder()

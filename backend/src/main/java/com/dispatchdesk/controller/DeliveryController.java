@@ -1,11 +1,14 @@
 package com.dispatchdesk.controller;
 
 import com.dispatchdesk.dto.*;
+import com.dispatchdesk.entity.DeliveryStatusHistory;
 import com.dispatchdesk.service.DeliveryServiceComplete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/deliveries")
@@ -61,7 +64,7 @@ public class DeliveryController {
     }
 
     @GetMapping("/{id}/history")
-    public ResponseEntity<ApiResponse<com.dispatchdesk.entity.DeliveryStatusHistory>> getHistory(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<List<DeliveryStatusHistory>>> getHistory(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(deliveryService.getDeliveryHistory(id)));
     }
 

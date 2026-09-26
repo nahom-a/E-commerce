@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
-    List<ActivityLog> findAllOrderByCreatedAtDesc();
+    List<ActivityLog> findAllByOrderByCreatedAtDesc();
 
     @Query("SELECT a FROM ActivityLog a WHERE a.entityType = :entityType AND a.entityId = :entityId ORDER BY a.createdAt DESC")
     List<ActivityLog> findByEntity(@Param("entityType") String entityType, @Param("entityId") Long entityId);

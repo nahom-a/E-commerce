@@ -12,6 +12,6 @@ import java.util.List;
 public interface DeliveryStatusHistoryRepository extends JpaRepository<DeliveryStatusHistory, Long> {
     List<DeliveryStatusHistory> findByDeliveryIdOrderByChangedAtAsc(Long deliveryId);
 
-    @Query("SELECT h FROM DeliveryStatusHistory h WHERE h.delivery.id = :deliveryId ORDER BY h.changedAtAsc")
+    @Query("SELECT h FROM DeliveryStatusHistory h WHERE h.delivery.id = :deliveryId ORDER BY h.changedAt")
     List<DeliveryStatusHistory> findByDeliveryId(@Param("deliveryId") Long deliveryId);
 }

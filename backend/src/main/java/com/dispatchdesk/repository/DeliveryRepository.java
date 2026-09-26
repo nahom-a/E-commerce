@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,25 +22,28 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
         "LOWER(d.deliveryNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
         "LOWER(d.recipientName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
         "LOWER(d.customer.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-        "LOWER(d.address) LIKE LOWER(CONCAT('%', :search, '%'))")
+        "LOWER(d.address) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+        "LOWER(d.city) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Delivery> search(@Param("search") String search, Pageable pageable);
 
     Page<Delivery> findByStatus(DeliveryStatus status, Pageable pageable);
 
-    @Query("SELECT d FROM Delivery d WHERE d.status = :status AND d.driver.id = :driverId")
-    Page<Delivery> findByStatusAndDriverId(@Param("status") DeliveryStatus status, @Param("driverId") Long driverId, Pageable pageable);
+    Page<Delivery> findByDriverId(Long driverId, Pageable pageable);
 
-    @Query("SELECT d FROM Delivery d WHERE d.driver.id = :driverId")
-    List<Delivery> findByDriverId(@Param("driverId") Long driverId);
+    Page<Delivery> findByStatusAndDriverId(DeliveryStatus status, Long driverId, Pageable pageable);
 
-    Page<Delivery> findByDriverId(@Param("driverId") Long driverId, Pageable pageable);
+    List<Delivery> findByDriverId(Long driverId);
 
-    @Query("SELECT d FROM Delivery d WHERE d.status = :status")
-    long countByStatus(@Param("status") String status);
+    List<Delivery> findByCustomerId(Long customerId);
 
-    @Query("SELECT d FROM Delivery d WHERE d.status = :status AND DATE(d.createdAt) = :date")
-    long countByStatusAndDate(@Param("status") String status, @Param("date") java.time.LocalDate date);
+    long countByStatus(DeliveryStatus status);
 
-    @Query("SELECT d FROM Delivery d WHERE DATE(d.createdAt) = :date")
-    long countByCreatedDate(@Param("date") java.time.LocalDate date);
+    long countByStatusIn(Collection<DeliveryStatus> statuses);
+
+    long countByStatusAndUpdatedAtBetween(DeliveryStatus status, LocalDateTime start, LocalDateTime end);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT COUNT(d) FROM Delivery d WHERE d.driver.id = :driverId AND d.status IN :statuses")
+    int countActiveByDriverId(@Param("driverId") Long driverId, @Param("statuses") Collection<DeliveryStatus> statuses);
 }
