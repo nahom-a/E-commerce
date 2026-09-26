@@ -1,102 +1,94 @@
 # DispatchDesk
 
-A delivery and dispatch management system for small businesses.
+> A modern, restrained, and robust delivery and fleet dispatch management system built for small logistics operations.
 
-## Overview
+![DispatchDesk](https://img.shields.io/badge/DispatchDesk-v0.1.0-blue.svg)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen.svg)
+![React](https://img.shields.io/badge/React-18.2-61dafb.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791.svg)
 
-DispatchDesk is a full-stack web application for managing delivery operations. It provides tools for admins, dispatchers, and drivers to manage deliveries, assign drivers, track status, and view operational activity.
+---
 
-## Features
+## 🚀 Overview
 
-- **Role-Based Access**: ADMIN, DISPATCHER, and DRIVER roles with appropriate permissions
-- **Delivery Management**: Create, assign, and track deliveries through a state machine
-- **Driver Management**: Add drivers, assign to deliveries, manage availability
-- **Customer Management**: Maintain customer records and delivery history
-- **Activity Log**: Operational audit trail
-- **Dashboard**: Real-time statistics and delivery overview
-- **Authentication**: JWT-based login with BCrypt password hashing
-- **State Machine**: Validated status transitions enforced by backend
+**DispatchDesk** provides small logistics and dispatch companies with a desktop-first, reliable management platform. It streamlines order ingestion, real-time driver allocation, state-machine validated delivery tracking, and operational audit history.
 
-## Tech Stack
+Designed around a pragmatic, dense, and functional 2020-era SaaS interface philosophy, DispatchDesk prioritizes readability, instant feedback, and zero clutter.
+
+---
+
+## ✨ Features
+
+- **Role-Based Access Control (RBAC)**: Distinct permissions for `ADMIN`, `DISPATCHER`, and `DRIVER` roles.
+- **Order Dispatch & Lifecycle**:
+  - Validated state transitions: `PENDING` &rarr; `ASSIGNED` &rarr; `PICKED_UP` &rarr; `OUT_FOR_DELIVERY` &rarr; `DELIVERED` / `FAILED` / `CANCELLED`.
+  - Comprehensive status audit history with timestamps and operator notes.
+- **Fleet & Driver Management**:
+  - Live driver load monitoring (`AVAILABLE`, `ON_DELIVERY`, `OFFLINE`).
+  - Single-click driver assignment and re-assignment workflows.
+  - Driver deliveries inspection drawer.
+- **Customer & Corporate Accounts**:
+  - Client directory with contact persons, localized neighborhoods, and complete historical delivery archives.
+- **Real-Time Operations Dashboard**:
+  - KPI summary metrics (Active Orders, Pending Assignment, Out for Delivery, Delivered Today, Failed Today).
+  - 7-Day volume trends with interactive SVG metrics.
+  - Live dispatch queue and recent activity feed.
+- **System Audit Log**: Full trail of system modifications and administrative actions.
+- **Toast Notifications & Modals**: Smooth in-app modal workflows and toast feedback replacing intrusive browser dialogs.
+
+---
+
+## 🛠️ Technology Stack
 
 ### Backend
-- Java 17+
-- Spring Boot 3.2
-- Spring Security (JWT)
-- Spring Data JPA
-- PostgreSQL
-- Flyway (database migrations)
-- Maven
-- Bean Validation
+- **Java 17+** (Spring Boot 3.2.5)
+- **Spring Security** (Stateless JWT Authentication & BCrypt)
+- **Spring Data JPA & Hibernate 6**
+- **Flyway Database Migrations**
+- **PostgreSQL** (Production & Local) / **H2** (In-memory testing profile)
+- **JUnit 5 & Spring Boot Test Suite**
 
 ### Frontend
-- React 18
-- TypeScript
-- Vite
-- React Router
-- TanStack Query
-- CSS (plain)
+- **React 18** with **TypeScript**
+- **Vite 5** Build Tooling
+- **React Router 6** (Protected and Public Routes)
+- **TanStack React Query 5** (Server state management & cache invalidation)
+- **Lucide Icons** (Crisp vector iconography)
+- **Axios** (Configured interceptors with automatic auth header injection)
 
-## Architecture Overview
+---
 
-```
-frontend/          # React + Vite + TypeScript
-  src/
-    components/    # Reusable UI components
-    pages/         # Page-level components
-    api/           # API service layer
-    hooks/         # Custom React hooks
-    types/         # TypeScript interfaces
-
-backend/           # Spring Boot application
-  src/main/java/
-    config/        # Security, JPA, Web config
-    controller/    # REST controllers
-    service/       # Business logic
-    repository/    # JPA repositories
-    entity/        # JPA entities
-    dto/           # Data transfer objects
-    enum/          # Enumerations
-    exception/     # Exception handling
-  src/main/resources/
-    db/migration/  # Flyway SQL migrations
-    application.properties
-```
-
-## Database Setup
+## 🗄️ Database Setup
 
 ### Using Docker Compose
+Run the local PostgreSQL database on port 5433:
 
 ```bash
 docker compose up -d
 ```
 
-This starts PostgreSQL on port 5432.
+### Database Schema & Seed Data
+Migrations in `backend/src/main/resources/db/migration/` are executed automatically by Flyway on startup:
+- `V1__init.sql`: Table definitions and indexes for users, customers, drivers, deliveries, delivery status history, and activity logs.
+- `V2__seed.sql`: Realistic Ethiopian logistics seed data (Addis Ababa neighborhoods: Bole, Kazanchis, CMC, Saris, Gerji, Piassa, etc.).
+- `V3__fix_seed_passwords.sql`: Bcrypt-hashed credentials for demo accounts.
 
-### Manual Setup
+---
 
-1. Install PostgreSQL 15+
-2. Create a database named `dispatchdesk`
-3. Create a user `dispatchdesk` with password `dispatchdesk`
+## 🏃 Running the Application
 
-## Running the Application
-
-### Backend
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-Or build and run the JAR:
+### 1. Backend Service
 
 ```bash
 cd backend
-./mvnw clean package
-java -jar target/dispatchdesk-0.1.0.jar
+mvn clean test
+mvn spring-boot:run
 ```
 
-### Frontend
+The REST API will be available at `http://localhost:8080/api`.
+
+### 2. Frontend Web Client
 
 ```bash
 cd frontend
@@ -104,71 +96,34 @@ npm install
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+The web client will be available at `http://localhost:5173`.
 
-The API runs on `http://localhost:8080`.
+---
 
-## Seed Accounts
+## 🔑 Demo Credentials
 
-| Email | Role | Password |
-|-------|------|----------|
-| admin@dispatchdesk.local | ADMIN | password123 |
-| dispatcher@dispatchdesk.local | DISPATCHER | password123 |
-| driver1@dispatchdesk.local | DRIVER | password123 |
-| driver2@dispatchdesk.local | DRIVER | password123 |
+| Role | Email | Password |
+|---|---|---|
+| **Admin** | `admin@dispatchdesk.local` | `password123` |
+| **Dispatcher** | `dispatcher@dispatchdesk.local` | `password123` |
+| **Driver** | `driver1@dispatchdesk.local` | `password123` |
 
-## API Endpoints
+*(Quick demo login buttons are also available on the Login screen and Settings page.)*
 
-### Authentication
-- `POST /api/auth/login` - Login
+---
 
-### Deliveries
-- `GET /api/deliveries` - List deliveries (with search, filter, pagination)
-- `GET /api/deliveries/{id}` - Get delivery details
-- `POST /api/deliveries` - Create delivery
-- `PUT /api/deliveries/{id}` - Update delivery
-- `POST /api/deliveries/{id}/assign` - Assign driver
-- `POST /api/deliveries/{id}/status` - Change status
-- `POST /api/deliveries/{id}/cancel` - Cancel delivery
-- `GET /api/deliveries/{id}/history` - Get status history
+## 🧪 Running Tests
 
-### Drivers
-- `GET /api/drivers` - List drivers
-- `GET /api/drivers/{id}` - Get driver details
-- `POST /api/drivers` - Create driver
-- `PUT /api/drivers/{id}` - Update driver
-
-### Customers
-- `GET /api/customers` - List customers
-- `GET /api/customers/{id}` - Get customer details
-- `POST /api/customers` - Create customer
-- `PUT /api/customers/{id}` - Update customer
-
-### Activity
-- `GET /api/activity` - Get activity log
-
-### Dashboard
-- `GET /api/dashboard/stats` - Get dashboard statistics
-- `GET /api/dashboard/activity` - Get recent activity
-
-## Testing
-
-Backend tests are located in `backend/src/test/java/com/dispatchdesk/`.
+Execute the complete backend test suite:
 
 ```bash
 cd backend
-./mvnw test
+mvn test
 ```
 
-## Future Improvements
+Build and type-check the frontend:
 
-- Email notifications
-- Export to CSV/PDF
-- Map integration
-- Real-time updates via WebSockets
-- Reporting and analytics
-
-## License
-
-MIT
+```bash
+cd frontend
+npm run build
 ```
