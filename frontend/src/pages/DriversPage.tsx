@@ -1,145 +1,273 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { driverApi } from '../../api';
-import { useAuth } from '../../hooks/useAuth';
-import { Driver } from '../../types';
-import { DriverDTO } from '../../types';
+import { useQuery } from '@tanstack/react-query';
+import { driverApi } from '../api';
+import { DriverModal } from '../components/drivers/DriverModal';
+import { DriverDeliveriesModal } from '../components/drivers/DriverDeliveriesModal';
+import { DriverStatusBadge } from '../components/common/Badge';
+import { Driver, PageResponse } from '../types';
+import { Plus, Truck, Phone, CreditCard, Package, Edit2, List, Grid } from 'lucide-react';
 
-const DriversPage: React.FC = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ phone: '', vehicle: '', licenseNumber: '', status: 'AVAILABLE' });
+export const DriversPage: React.FC = () => {
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
-  const { data, isLoading } = useQuery<{ data: DriverDTO[] }>({
-    queryKey: ['drivers'],
-    queryFn: () => driverApi.getAll().then((r) => r.data),
+  // Modals
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editDriver, setEditDriver] = useState<Driver | null>(null);
+  const [viewDeliveriesDriver, setViewDeliveriesDriver] = useState<Driver | null>(null);
+
+  const { data, isLoading } = useQuery<PageResponse<Driver>>({
+    queryKey: ['drivers', selectedStatus],
+    queryFn: () => driverApi.getAll(selectedStatus ? { status: selectedStatus, size: 50 } : { size: 50 }),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: any) => driverApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      setShowForm(false);
-      setFormData({ phone: '', vehicle: '', licenseNumber: '', status: 'AVAILABLE' });
-    },
-  });
-
-  const handleSubmit = () => {
-    if (!formData.phone || !formData.vehicle || !formData.licenseNumber) {
-      alert('All fields are required.');
-      return;
-    }
-    createMutation.mutate(formData);
-  };
-
-  const drivers = data?.data || [];
+  const drivers = data?.content || [];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+        }}
+      >
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 700 }}>Drivers</h1>
-          <p style={{ color: '#666', fontSize: '14px' }}>Manage your delivery team</p>
+          <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+            Drivers
+          </h1>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '3px 0 0 0' }}>
+            Manage delivery personnel, vehicles, and active dispatch loads
+          </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#1a1a2e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '13px',
-          }}
-        >
-          + Add driver
+
+        <button onClick={() => setIsAddOpen(true)} className="btn-primary">
+          <Plus size={16} />
+          <span>Add Driver</span>
         </button>
       </div>
 
-      {showForm && (
-        <div style={{ backgroundColor: '#fff', border: '1px solid #e0e0e0', borderRadius: '6px', padding: '16px', marginBottom: '16px' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '12px' }}>Add New Driver</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <input
-              placeholder="Phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px' }}
-            />
-            <input
-              placeholder="Vehicle"
-              value={formData.vehicle}
-              onChange={(e) => setFormData({ ...formData, vehicle: e.target.value })}
-              style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px' }}
-            />
-            <input
-              placeholder="License Number"
-              value={formData.licenseNumber}
-              onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-              style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px' }}
-            />
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              style={{ padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px' }}
+      {/* Filter and View Toggle Bar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '20px',
+          backgroundColor: '#ffffff',
+          padding: '12px 16px',
+          borderRadius: '6px',
+          border: '1px solid #e2e8f0',
+        }}
+      >
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {['', 'AVAILABLE', 'ON_DELIVERY', 'OFFLINE'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '4px',
+                fontSize: '12.5px',
+                fontWeight: selectedStatus === status ? 600 : 500,
+                backgroundColor: selectedStatus === status ? '#2563eb' : '#f8fafc',
+                color: selectedStatus === status ? '#ffffff' : '#475569',
+                border: `1px solid ${selectedStatus === status ? '#2563eb' : '#e2e8f0'}`,
+                cursor: 'pointer',
+              }}
             >
-              <option value="AVAILABLE">Available</option>
-              <option value="ON_DELIVERY">On Delivery</option>
-              <option value="OFFLINE">Offline</option>
-            </select>
-          </div>
+              {status ? status.replace(/_/g, ' ') : 'All Drivers'}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '4px' }}>
           <button
-            onClick={handleSubmit}
+            onClick={() => setViewMode('grid')}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#5cb85c',
-              color: '#fff',
-              border: 'none',
+              padding: '6px 8px',
               borderRadius: '4px',
-              fontSize: '13px',
+              backgroundColor: viewMode === 'grid' ? '#e2e8f0' : '#ffffff',
+              border: '1px solid #cbd5e1',
+              color: '#334155',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
-            Save
+            <Grid size={15} />
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            style={{
+              padding: '6px 8px',
+              borderRadius: '4px',
+              backgroundColor: viewMode === 'table' ? '#e2e8f0' : '#ffffff',
+              border: '1px solid #cbd5e1',
+              color: '#334155',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <List size={15} />
           </button>
         </div>
-      )}
+      </div>
 
+      {/* Main Content */}
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>Loading...</div>
+        <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>Loading drivers...</div>
+      ) : drivers.length === 0 ? (
+        <div style={{ padding: '48px', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+          <p style={{ fontSize: '14px', fontWeight: 600, color: '#334155' }}>No drivers found</p>
+          <p style={{ fontSize: '12.5px', color: '#64748b' }}>Register a new driver to start dispatching orders.</p>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+          {drivers.map((driver) => (
+            <div
+              key={driver.id}
+              className="card"
+              style={{
+                padding: '18px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '6px',
+                        backgroundColor: '#eff6ff',
+                        color: '#2563eb',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Truck size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                        {driver.userName}
+                      </h3>
+                      <span style={{ fontSize: '11.5px', color: '#64748b' }}>ID #{driver.id}</span>
+                    </div>
+                  </div>
+                  <DriverStatusBadge status={driver.status} />
+                </div>
+
+                <div style={{ fontSize: '12.5px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '6px', margin: '14px 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Phone size={14} color="#64748b" />
+                    <span>{driver.phone}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Truck size={14} color="#64748b" />
+                    <span>{driver.vehicle}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CreditCard size={14} color="#64748b" />
+                    <span>License: <strong>{driver.licenseNumber}</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  paddingTop: '12px',
+                  borderTop: '1px solid #f1f5f9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <button
+                  onClick={() => setViewDeliveriesDriver(driver)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#2563eb',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                >
+                  <Package size={14} />
+                  <span>{driver.activeDeliveries} Active Load{driver.activeDeliveries === 1 ? '' : 's'}</span>
+                </button>
+
+                <button
+                  onClick={() => setEditDriver(driver)}
+                  className="btn-secondary"
+                  style={{ padding: '4px 8px', fontSize: '12px' }}
+                >
+                  <Edit2 size={12} />
+                  <span>Edit</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        <div style={{ backgroundColor: '#fff', border: '1px solid #e0e0e0', borderRadius: '6px', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+        <div className="table-container">
+          <table className="data-table">
             <thead>
-              <tr style={{ borderBottom: '2px solid #e0e0e0' }}>
-                {['Name', 'Phone', 'Vehicle', 'Status', 'Active Deliveries', 'Actions'].map((h) => (
-                  <th key={h} style={{ padding: '10px 8px', textAlign: 'left', fontWeight: 600, color: '#555', fontSize: '12px', textTransform: 'uppercase' }}>
-                    {h}
-                  </th>
-                ))}
+              <tr>
+                <th>Driver Name</th>
+                <th>Phone</th>
+                <th>Vehicle Model</th>
+                <th>License Plate</th>
+                <th>Status</th>
+                <th>Active Loads</th>
+                <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {drivers.map((driver) => (
-                <tr key={driver.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '10px 8px', fontWeight: 500 }}>{driver.userName || 'Driver'}</td>
-                  <td style={{ padding: '10px 8px' }}>{driver.phone}</td>
-                  <td style={{ padding: '10px 8px' }}>{driver.vehicle}</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      backgroundColor: driver.status === 'AVAILABLE' ? '#e6f4ea' : driver.status === 'ON_DELIVERY' ? '#fef3e2' : '#f0f0f0',
-                      color: driver.status === 'AVAILABLE' ? '#137333' : driver.status === 'ON_DELIVERY' ? '#d97706' : '#666',
-                    }}>
-                      {driver.status.replace(/_/g, ' ')}
-                    </span>
+              {drivers.map((d) => (
+                <tr key={d.id}>
+                  <td style={{ fontWeight: 600, color: '#0f172a' }}>{d.userName}</td>
+                  <td>{d.phone}</td>
+                  <td>{d.vehicle}</td>
+                  <td style={{ fontWeight: 500 }}>{d.licenseNumber}</td>
+                  <td>
+                    <DriverStatusBadge status={d.status} />
                   </td>
-                  <td style={{ padding: '10px 8px' }}>{driver.activeDeliveries}</td>
-                  <td style={{ padding: '10px 8px' }}>
-                    <button style={{ color: '#4a90d9', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}>
-                      View
+                  <td>
+                    <button
+                      onClick={() => setViewDeliveriesDriver(d)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#2563eb',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontSize: '12.5px',
+                      }}
+                    >
+                      {d.activeDeliveries} orders
+                    </button>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <button
+                      onClick={() => setEditDriver(d)}
+                      className="btn-secondary"
+                      style={{ padding: '4px 8px', fontSize: '12px' }}
+                    >
+                      <Edit2 size={12} />
+                      <span>Edit</span>
                     </button>
                   </td>
                 </tr>
@@ -148,6 +276,24 @@ const DriversPage: React.FC = () => {
           </table>
         </div>
       )}
+
+      {/* Modals */}
+      <DriverModal
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+      />
+
+      <DriverModal
+        driver={editDriver}
+        isOpen={!!editDriver}
+        onClose={() => setEditDriver(null)}
+      />
+
+      <DriverDeliveriesModal
+        driver={viewDeliveriesDriver}
+        isOpen={!!viewDeliveriesDriver}
+        onClose={() => setViewDeliveriesDriver(null)}
+      />
     </div>
   );
 };
