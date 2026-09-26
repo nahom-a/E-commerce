@@ -1,0 +1,2 @@
+UPDATE users SET password_hash = '$2b$10$4KKW/COFvutmonds.wFjoOU5JtIVT7nIWyvhm//YM47acv9qn35LK'
+WHERE email IN ('admin@dispatchdesk.local', 'dispatcher@dispatchdesk.local', 'driver1@dispatchdesk.local', 'driver2@dispatchdesk.local');
